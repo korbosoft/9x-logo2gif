@@ -36,7 +36,7 @@ def main():
             with logo.copy() as frame:
                 frame.putpalette(cycle(frame, i))
                 frames.append(frame)
-        frames[0].save('./output/logo.gif',
+        frames[0].save('logo.gif',
                        save_all=True, append_images=frames[1:], duration=100, loop=0)
 
 if __name__ == '__main__':
