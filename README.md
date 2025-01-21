@@ -1,2 +1,2 @@
 # 9x-logo2gif
-Generate GIF from LOGO.SYS
+Generates an animated GIF from a Windows 9x LOGO.SYS file
