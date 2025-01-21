@@ -5,7 +5,7 @@ import os
 import sys
 from PIL import Image
 
-def cycle(im: Image, amount: int):
+def cycle(im: Image, paloffset: int, amount: int):
     pal = list(zip(*[iter(im.getpalette())]*3))
     if pal is None:
         raise TypeError("Tried to get color palette, but got None instead. Length is probably over 256.")
@@ -16,28 +16,35 @@ def cycle(im: Image, amount: int):
     # print(pal[:236] + pal[-19:] + list(zip(*[iter(pal[236])]*3)))
     # print(list(iter(iter(pal))))
     for i in range(amount):
-        pal = pal[:236] + pal[-19:] + list(zip(*[iter(pal[236])]*3))
+        pal = pal[:paloffset] + pal[paloffset-255:] + list(zip(*[iter(pal[paloffset])]*3))
     return [item for t in pal for item in t]
 def main():
     frames = []
 
     parser = argparse.ArgumentParser(prog='9x-logo2gif',
-                                     description='Generates an animated GIF from a Windows 9x LOGO.SYS file')
-
-    parser.add_argument('filename',
+                                     description='Generates an animated GIF from a Windows 9x LOGO.SYS file', usage='%(prog)s [-h] input [-o OUTPUT]')
+    parser.add_argument('input',
         help='Path to a LOGO.SYS-type file',
+        )
+    parser.add_argument('-o', '--output',
+        help='Path to output GIF',
+        default='logo.gif'
         )
 
     args = parser.parse_args()
-
-    with Image.open(args.filename) as logo:
+    with Image.open(args.input) as logo:
+        with open(args.input, 'rb') as f:
+            f.seek(0x32)
+            paloffset = int.from_bytes(f.read(1))
+            print(paloffset)
         logo = logo.resize([640, 400])
-        for i in range(20):
+        for i in range(paloffset):
             with logo.copy() as frame:
-                frame.putpalette(cycle(frame, i))
+                frame.putpalette(cycle(frame, paloffset, i))
                 frames.append(frame)
-        frames[0].save('logo.gif',
-                       save_all=True, append_images=frames[1:], duration=100, loop=0)
+        frames[0].save(args.output,
+                       'GIF', save_all=True, append_images=frames[1:], duration=100, loop=0)
+        print(f'Saved to {args.output}')
 
 if __name__ == '__main__':
     main()
