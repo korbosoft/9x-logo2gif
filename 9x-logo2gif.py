@@ -36,9 +36,8 @@ def main():
         with open(args.input, 'rb') as f:
             f.seek(0x32)
             paloffset = int.from_bytes(f.read(1))
-            print(paloffset)
         logo = logo.resize([640, 400])
-        for i in range(paloffset):
+        for i in range(256 - paloffset):
             with logo.copy() as frame:
                 frame.putpalette(cycle(frame, paloffset, i))
                 frames.append(frame)
